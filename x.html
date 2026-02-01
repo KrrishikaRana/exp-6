@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SVG Drawing Tool</title>
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    font-family: "Segoe UI", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .box {
+    width: 75vw;
+    max-width: 900px;
+    background: #ffffff;
+    padding: 18px;
+    border-radius: 18px;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 12px;
+    color: #2d3748;
+    font-weight: 600;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  select, input[type="color"], button {
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #cbd5e0;
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: 0.2s ease;
+  }
+
+  select:hover,
+  input[type="color"]:hover,
+  button:hover {
+    transform: translateY(-1px);
+  }
+
+  button {
+    background: #667eea;
+    color: #fff;
+    border: none;
+  }
+
+  button:hover {
+    background: #5a67d8;
+  }
+
+  svg {
+    width: 100%;
+    height: 60vh;
+    background: #f7fafc;
+    border-radius: 14px;
+    border: 1px solid #cbd5e0;
+    cursor: crosshair;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>SVG Drawing Tool</h2>
+
+  <div class="controls">
+    <select id="shape">
+      <option value="line">Line</option>
+      <option value="rect">Rectangle</option>
+    </select>
+
+    <input type="color" id="color">
+
+    <button onclick="undo()">Undo</button>
+  </div>
+
+  <svg id="svg"></svg>
+</div>
+
+<script>
+  const svg = document.getElementById("svg");
+  const shapeType = document.getElementById("shape");
+  const color = document.getElementById("color");
+
+  let drawing = false;
+  let shape;
+  let startX, startY;
+
+  svg.onmousedown = (e) => {
+    drawing = true;
+    startX = e.offsetX;
+    startY = e.offsetY;
+
+    if (shapeType.value === "line") {
+      shape = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      shape.setAttribute("x1", startX);
+      shape.setAttribute("y1", startY);
+      shape.setAttribute("x2", startX);
+      shape.setAttribute("y2", startY);
+      shape.setAttribute("stroke", color.value);
+      shape.setAttribute("stroke-width", 2);
+    }
+
+    if (shapeType.value === "rect") {
+      shape = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      shape.setAttribute("x", startX);
+      shape.setAttribute("y", startY);
+      shape.setAttribute("width", 0);
+      shape.setAttribute("height", 0);
+      shape.setAttribute("fill", "none");
+      shape.setAttribute("stroke", color.value);
+      shape.setAttribute("stroke-width", 2);
+    }
+
+    svg.appendChild(shape);
+  };
+
+  svg.onmousemove = (e) => {
+    if (!drawing) return;
+
+    if (shape.tagName === "line") {
+      shape.setAttribute("x2", e.offsetX);
+      shape.setAttribute("y2", e.offsetY);
+    }
+
+    if (shape.tagName === "rect") {
+      shape.setAttribute("width", Math.abs(e.offsetX - startX));
+      shape.setAttribute("height", Math.abs(e.offsetY - startY));
+    }
+  };
+
+  svg.onmouseup = () => drawing = false;
+
+  function undo() {
+    if (svg.lastChild) {
+      svg.removeChild(svg.lastChild);
+    }
+  }
+</script>
+
+</body>
+</html>
